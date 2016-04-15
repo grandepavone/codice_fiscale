@@ -6,7 +6,7 @@
 
   class CodiceFiscale {
 
-    private  $VOCALI; // array  di vocali
+    private $VOCALI; // array  di vocali
     private  $CONSONANTI; // array di CONSONANTI
     private  $SPECIALI;
 
@@ -41,7 +41,7 @@
 
       $this->VOCALI = str_split( 'aeiou'); // array  di vocali
       $this->CONSONANTI = str_split( 'qwrtypsdfghjklzxcvbnm'); // array di CONSONANTI
-       $this->SPECIALI = str_split(  '\'\\",.-_:;+ùàòèé[]' );
+       $this->SPECIALI = str_split(  '\'\\",.-_:;+ùàòèé[] ' );
     }
 
 
@@ -96,8 +96,8 @@
      */
     public function getCode() {
 
-      $res = $this->convertNS( array(0, 1, 2), $this->persona->getSurname());
-      $res .= $this->convertNS(array(0, 2, 3), $this->persona->getNome() );
+      $res = $this->convertNS( array(0, 1, 2), strtolower($this->persona->getCognome()));
+      $res .= $this->convertNS(array(0, 2, 3), strtolower($this->persona->getNome()) );
 
       list($codAnno, $codMese, $codGiorno) = $this->convertBirthDate();
       $res .= $codAnno;
@@ -105,6 +105,8 @@
       $res .= $codGiorno;
 
       $res .= $this->convertCity();
+
+      $res .= $this->generateLastChar($res); // genera il carattere di controllo
 
 
       return strtoupper($res);
@@ -190,7 +192,7 @@
      */
     private function convertCity() {
 
-      return $this->cityconverter->getByKey($this->persona->getCittaNascita());
+      return $this->cityconverter->getByCity($this->persona->getCittaNascita());
 
 
     }
@@ -232,27 +234,76 @@
 
     /**
      * Genera carattere di controllo
-
-     * @return string Carattere
+     * @param string Codice fiscale senza ultimo carattere
+     * @return string Carattere di controllo
      */
-    private function generateLastChar() {
+    private function generateLastChar($partialcode) {
 
+      $partialcode = strtoupper($partialcode); // per sicurezza tutto in maiuscolo
+
+      $costante_divisione = 26; // servirà per la divisione finale
+
+      $pari = array(
+          '0' =>  0, '1' =>  1, '2' =>  2, '3' =>  3, '4' =>  4,
+          '5' =>  5, '6' =>  6, '7' =>  7, '8' =>  8, '9' =>  9,
+          'A' =>  0, 'B' =>  1, 'C' =>  2, 'D' =>  3, 'E' =>  4,
+          'F' =>  5, 'G' =>  6, 'H' =>  7, 'I' =>  8, 'J' =>  9,
+          'K' => 10, 'L' => 11, 'M' => 12, 'N' => 13, 'O' => 14,
+          'P' => 15, 'Q' => 16, 'R' => 17, 'S' => 18, 'T' => 19,
+          'U' => 20, 'V' => 21, 'W' => 22, 'X' => 23, 'Y' => 24,
+          'Z' => 25
+      );
+
+      $dispari = array(
+          '0' =>  1, '1' =>  0, '2' =>  5, '3' =>  7, '4' =>  9,
+          '5' => 13, '6' => 15, '7' => 17, '8' => 19, '9' => 21,
+          'A' =>  1, 'B' =>  0, 'C' =>  5, 'D' =>  7, 'E' =>  9,
+          'F' => 13, 'G' => 15, 'H' => 17, 'I' => 19, 'J' => 21,
+          'K' =>  2, 'L' =>  4, 'M' => 18, 'N' => 20, 'O' => 11,
+          'P' =>  3, 'Q' =>  6, 'R' =>  8, 'S' => 12, 'T' => 14,
+          'U' => 16, 'V' => 10, 'W' => 22, 'X' => 25, 'Y' => 24,
+          'Z' => 23
+      );
+
+      $controllo = array(
+          '0'  => 'A', '1'  => 'B', '2'  => 'C', '3'  => 'D',
+          '4'  => 'E', '5'  => 'F', '6'  => 'G', '7'  => 'H',
+          '8'  => 'I', '9'  => 'J', '10' => 'K', '11' => 'L',
+          '12' => 'M', '13' => 'N', '14' => 'O', '15' => 'P',
+          '16' => 'Q', '17' => 'R', '18' => 'S', '19' => 'T',
+          '20' => 'U', '21' => 'V', '22' => 'W', '23' => 'X',
+          '24' => 'Y', '25' => 'Z'
+      );
+
+
+      $splitted = str_split($partialcode); // array di tutti i caratteri del codice
+
+      $sum = 0; // valore totale di controllo
+
+      foreach ($splitted as $position => $char) {
+
+        $position++; // incrementa il valore di 1 per i calcoli successivi
+
+        if ( ($position % 2) === 0) { // se la posizione è PARI
+
+          $sum += $pari[$char];
+
+        }
+        else {
+
+          $sum += $dispari[$char];
+
+        }
+
+        $resto = $sum % $costante_divisione; // trova il resto della divisione
+
+        $res = $controllo[ $sum ]; // individua il valore di controllo
+
+        return $res;
+
+
+      }
 
 
     }
 }
-
-$nascita = new Date("1994-3-15");
-
-$citta = new Citta('Ortona', 'CH');
-
-$gioa = array ('nome' => 'gioacchino', 'cognome' => 'castorio', 'data_nascita' => $nascita, 'citta_nascita' => $citta, 'sesso' => FALSE);
-
-$f = new FileAssociator('../file/codici_comuni_italiani.txt');
-
-$gio = new Persona($gioa);
-$cod = new CodiceFiscale($gio, $f);
-
-echo $cod->getCode();
-
-// echo "\n" . $citta->getNome() . " " . $citta->getProvincia() ."\n";

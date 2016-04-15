@@ -8,7 +8,7 @@
 
     private $nome;
 
-    private $surname;
+    private $cognome;
 
     private $citta_nascita;
 
@@ -18,17 +18,17 @@
 
     /** Costruttore della classe Persona
     *
-    * @param array params Array associativo 
+    * @param array params Array associativo
     *
     */
 
     public function __construct (array $params) {
 
-      $this->nome = $params['nome'];
-      $this->surname = $params['cognome'];
-      $this->data_nascita = $params['data_nascita'];
-      $this->citta_nascita = $params['citta_nascita'];
-      $this->sesso = $params['sesso'];
+      $this->setNome($params['nome']);
+      $this->setCognome($params['cognome']);
+      $this->setDataNascita($params['data_nascita']);
+      $this->setCittaNascita($params['citta_nascita']);
+      $this->setSesso($params['sesso']);
 
     }
 
@@ -60,23 +60,23 @@
     }
 
     /**
-     * Get the value of Surname
+     * Get the value of Cognome
      *
      * @return string
      */
-    public function getSurname()
+    public function getCognome()
     {
         return (string) $this->surname;
     }
 
     /**
-     * Set the value of Surname
+     * Set the value of Cognome
      *
      * @param string surname
      *
      * @return self
      */
-    public function setSurname($surname)
+    public function setCognome($surname)
     {
         $surname = trim($surname);
         $this->surname = $surname;

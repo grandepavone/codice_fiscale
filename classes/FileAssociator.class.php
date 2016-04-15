@@ -15,7 +15,7 @@ class FileAssociator Implements CityCodeAssociator {
 
   }
 
-  public function getByKey(Citta $city) {
+  public function getByCity(Citta $city) {
 
     $FOUND = FALSE; // servirà ad uscire dal ciclo strutturatamente
 

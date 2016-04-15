@@ -4,6 +4,6 @@
 
   interface CityCodeAssociator {
 
-  public function getByKey(Citta $chiave);
+  public function getByCity(Citta $chiave);
 
 }
