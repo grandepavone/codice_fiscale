@@ -17,8 +17,8 @@
 
     public function __construct ( $nome_citta, $prov) {
 
-      $this->nome = $this->setNome($nome_citta);
-      $this->provincia = $this->setProvincia($prov);
+      $this->setNome($nome_citta);
+      $this->setProvincia($prov);
 
     }
 

@@ -1,6 +1,7 @@
 <?php
 
-require_once("../interfaces/CityCodeAssociator.interface.php");
+require_once("../interfaces/CityCodeAssociator.interface.php"); // importa l'interfaccia della classe
+require_once('./Citta.class.php'); // importa Citta
 
 class FileAssociator Implements CityCodeAssociator {
 
@@ -14,7 +15,7 @@ class FileAssociator Implements CityCodeAssociator {
 
   }
 
-  public function getByKey($chiave) {
+  public function getByKey(Citta $city) {
 
     $FOUND = FALSE; // servirà ad uscire dal ciclo strutturatamente
 
@@ -27,7 +28,7 @@ class FileAssociator Implements CityCodeAssociator {
 
       list($codice, $comune, $provincia) = explode (";", $buffer);  // divide la stringa in tre rispetto al separatore ; usato nel file
 
-      if ($comune == $chiave['comune'] && $provincia == $chiave['provincia']) {
+      if ($comune == strtoupper($city->getNome()) && $provincia == strtoupper($city->getProvincia())) {
 
         $res = $codice;
         $found = TRUE;

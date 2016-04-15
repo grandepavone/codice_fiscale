@@ -50,8 +50,7 @@
      *
      * @return Persona
      */
-    public function getPersona()
-    {
+    public function getPersona() {
         return $this->persona;
     }
 
@@ -62,8 +61,7 @@
      *
      * @return self
      */
-    public function setPersona(Persona $persona)
-    {
+    public function setPersona(Persona $persona) {
         $this->persona = $persona;
 
         return $this;
@@ -74,8 +72,7 @@
      *
      * @return CityCodeAssociator
      */
-    public function getCityconverter()
-    {
+    public function getCityconverter(){
         return $this->cityconverter;
     }
 
@@ -86,22 +83,35 @@
      *
      * @return self
      */
-    public function setCityconverter(CityCodeAssociator $cityconverter)
-    {
+    public function setCityconverter(CityCodeAssociator $cityconverter) {
         $this->cityconverter = $cityconverter;
 
         return $this;
     }
 
+    /**
+     * Fornisce il codice fiscale della persona
+     *
+     * @return string Codice fiscale
+     */
     public function getCode() {
 
       $res = $this->convertNS( array(0, 1, 2), $this->persona->getSurname());
       $res .= $this->convertNS(array(0, 2, 3), $this->persona->getNome() );
 
+      list($codAnno, $codMese, $codGiorno) = $this->convertBirthDate();
+      $res .= $codAnno;
+      $res .= $codMese;
+      $res .= $codGiorno;
 
-      return $res . "\n";
+      $res .= $this->convertCity();
+
+
+      return strtoupper($res);
 
     }
+
+
     /**
      * Elimina i caratteri specificati
      *
@@ -117,6 +127,7 @@
      * Genera codice del nome/cognome
      *
     * @param array Specifica posizione dei caratteri da selezionare
+    * @param string Stringa sorgente
      * @return string
      */
     private function convertNS (array $pos, $str) {
@@ -172,14 +183,70 @@
       return $res;
     }
 
+    /**
+     * Genera codice della citta di nascita
 
+     * @return string Codice corrispondente
+     */
+    private function convertCity() {
+
+      return $this->cityconverter->getByKey($this->persona->getCittaNascita());
+
+
+    }
+
+
+    /**
+     * Genera codice della data di nascita
+
+     * @return array Codice corrispondente anno - mese - giorno
+     */
+    private function convertBirthDate() {
+
+      $date = $this->getPersona()->getDataNascita(); // data di nascita
+
+      // codifica anno
+      $anno_nascita = $date->getYear(); // stringa anno di nascita
+      $cdAnno = $anno_nascita[2] . $anno_nascita[3]; // codifica l'anno
+
+      //codifica giorno
+      $cdGiorno = $date->getDay(); // codice giorno a 2 cifre
+
+      if ($this->persona->getSesso() === TRUE ) { // se è una donna
+        $cdGiorno += self::GIORNI_AGGIUNTIVI_DONNE;
+        $cdGiorno = (string) $cdGiorno; // torna a stringa dopo il casting automatico
+      }
+
+      // codifica mese
+      $mese_nascita = $date->getMonth(); // mese di nascita
+
+      $alf_codificato = 'abcdehlmprst'; // codificato per la traduzione del mese
+      $cdMese = $alf_codificato[ ((integer) $mese_nascita) - 1]; // codifica il mese
+
+
+
+      return array($cdAnno, $cdMese, $cdGiorno);
+
+
+    }
+
+    /**
+     * Genera carattere di controllo
+
+     * @return string Carattere
+     */
+    private function generateLastChar() {
+
+
+
+    }
 }
 
-$nascita = new Date();
+$nascita = new Date("1994-3-15");
 
 $citta = new Citta('Ortona', 'CH');
 
-$gioa = array ('nome' => 'gianluca', 'cognome' => 'tecce', 'data_nascita' => $nascita, 'citta_nascita' => $citta, 'sesso' => TRUE);
+$gioa = array ('nome' => 'gioacchino', 'cognome' => 'castorio', 'data_nascita' => $nascita, 'citta_nascita' => $citta, 'sesso' => FALSE);
 
 $f = new FileAssociator('../file/codici_comuni_italiani.txt');
 
@@ -187,3 +254,5 @@ $gio = new Persona($gioa);
 $cod = new CodiceFiscale($gio, $f);
 
 echo $cod->getCode();
+
+// echo "\n" . $citta->getNome() . " " . $citta->getProvincia() ."\n";
