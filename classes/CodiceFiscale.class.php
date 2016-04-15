@@ -278,6 +278,7 @@
 
       $splitted = str_split($partialcode); // array di tutti i caratteri del codice
 
+
       $sum = 0; // valore totale di controllo
 
       foreach ($splitted as $position => $char) {
@@ -295,14 +296,13 @@
 
         }
 
+      }
+
         $resto = $sum % $costante_divisione; // trova il resto della divisione
 
-        $res = $controllo[ $sum ]; // individua il valore di controllo
+        $res = $controllo[ $resto ]; // individua il valore di controllo
 
         return $res;
-
-
-      }
 
 
     }
